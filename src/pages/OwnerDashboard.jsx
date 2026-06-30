@@ -24,7 +24,10 @@ function OwnerDashboard() {
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [imageManageId, setImageManageId] = useState(null);
+  const [createImages, setCreateImages] = useState([]);
+  const [createImagePreviews, setCreateImagePreviews] = useState([]);
   const fileInputRef = useRef(null);
+  const createImageInputRef = useRef(null);
 
   const days = [
     "Sunday",
@@ -96,6 +99,7 @@ function OwnerDashboard() {
   };
 
   const resetForm = () => {
+    createImagePreviews.forEach((preview) => URL.revokeObjectURL(preview));
     setFormData({
       name: "",
       description: "",
@@ -108,6 +112,24 @@ function OwnerDashboard() {
     setPosition(null);
     setEditingId(null);
     setShowForm(false);
+    setCreateImages([]);
+    setCreateImagePreviews([]);
+    if (createImageInputRef.current) createImageInputRef.current.value = "";
+  };
+
+  const handleCreateImagesChange = (event) => {
+    const files = Array.from(event.target.files || []);
+
+    createImagePreviews.forEach((preview) => URL.revokeObjectURL(preview));
+
+    if (files.length === 0) {
+      setCreateImages([]);
+      setCreateImagePreviews([]);
+      return;
+    }
+
+    setCreateImages(files);
+    setCreateImagePreviews(files.map((file) => URL.createObjectURL(file)));
   };
 
   // Image upload handler - uploads to Cloudinary then saves URLs to backend
@@ -160,10 +182,20 @@ function OwnerDashboard() {
     if (!position) return alert("Please select a location on the map");
 
     try {
+      let imageUrls = [];
+      if (createImages.length > 0) {
+        setUploading(true);
+        setUploadProgress(0);
+        imageUrls = await uploadMultipleToCloudinary(createImages, (progress) => {
+          setUploadProgress(progress);
+        });
+      }
+
       const payload = {
         ...formData,
         lat: position.lat,
         lng: position.lng,
+        images: imageUrls,
       };
 
       if (editingId) {
@@ -179,6 +211,9 @@ function OwnerDashboard() {
     } catch (error) {
       console.error(error);
       alert(editingId ? "Error updating futsal" : "Error adding futsal");
+    } finally {
+      setUploading(false);
+      setUploadProgress(0);
     }
   };
 
@@ -378,6 +413,60 @@ function OwnerDashboard() {
                   placeholder="Describe your venue..."
                 />
               </div>
+
+              {!editingId && (
+                <div className="space-y-4 rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-4">
+                  <div>
+                    <label className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5 block ml-1">
+                      Venue Images
+                    </label>
+                    <p className="text-sm text-slate-500 ml-1 mb-3">
+                      Upload one or more images now so the venue is published with photos from the start.
+                    </p>
+                    <label className="flex cursor-pointer items-center justify-center gap-3 rounded-2xl border border-slate-300 bg-white px-4 py-4 text-slate-700 transition-colors hover:border-primary hover:text-primary">
+                      <Upload size={18} />
+                      <span className="font-medium">Choose images</span>
+                      <input
+                        ref={createImageInputRef}
+                        type="file"
+                        accept="image/*"
+                        multiple
+                        className="hidden"
+                        onChange={handleCreateImagesChange}
+                      />
+                    </label>
+                  </div>
+
+                  {createImagePreviews.length > 0 && (
+                    <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
+                      {createImagePreviews.map((preview, index) => (
+                        <div key={preview} className="group relative overflow-hidden rounded-2xl border border-slate-200 bg-white">
+                          <img
+                            src={preview}
+                            alt={`Venue preview ${index + 1}`}
+                            className="h-28 w-full object-cover"
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {uploading && createImages.length > 0 && (
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between text-xs font-medium text-slate-500">
+                        <span>Uploading images...</span>
+                        <span>{Math.round(uploadProgress)}%</span>
+                      </div>
+                      <div className="h-2 w-full overflow-hidden rounded-full bg-slate-200">
+                        <div
+                          className="h-full rounded-full bg-primary transition-all duration-300"
+                          style={{ width: `${uploadProgress}%` }}
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* Right Column: Map */}

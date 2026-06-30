@@ -49,12 +49,11 @@ function Login() {
                   <Mail size={20} />
                 </div>
                 <input
-                  type="email"
+                  type="text" 
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="w-full bg-slate-1000 border border-slate-700 rounded-2xl py-4 pl-12 pr-4 text-slate-900 focus:ring-2 focus:ring-secondary/50 focus:border-secondary outline-none transition-all placeholder:text-slate-600 shadow-inner"
                   placeholder="name@example.com"
-                  required
                 />
               </div>
             </div>

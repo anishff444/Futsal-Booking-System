@@ -153,12 +153,12 @@ function Register() {
                 <Mail size={20} />
               </div>
               <input
-                type="email"
+                type="text"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full bg-slate-1000 border border-slate-700 rounded-2xl py-4 pl-12 pr-4 text-slate-900 focus:ring-2 focus:ring-secondary/50 focus:border-secondary outline-none transition-all placeholder:text-slate-600 shadow-inner"
                 placeholder="name@example.com"
-                required
+                
               />
             </div>
           </div>
@@ -221,7 +221,7 @@ function Register() {
                   size={32}
                   className={`transition-colors ${role === "user" ? "text-primary" : "text-slate-500 group-hover/role:text-slate-600"}`}
                 />
-                <span className="text-sm font-bold">Book Venues</span>
+                <span className="text-sm font-bold">User</span>
               </button>
 
               <button
@@ -242,7 +242,7 @@ function Register() {
                   size={32}
                   className={`transition-colors ${role === "owner" ? "text-secondary" : "text-slate-500 group-hover/role:text-slate-600"}`}
                 />
-                <span className="text-sm font-bold">List Venues</span>
+                <span className="text-sm font-bold">Futsal Owner</span>
               </button>
             </div>
           </div>
